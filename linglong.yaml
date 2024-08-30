@@ -1,0 +1,55 @@
+version: "1"
+
+package:
+  id: io.github.Catrooms
+  name: Catrooms
+  version: 1.0.0.0
+  kind: app
+  description: |
+     The Backrooms with Demonic Cats!
+
+base: org.deepin.foundation/23.0.0
+runtime: org.deepin.Runtime/23.0.1
+
+command:
+  - /opt/apps/io.github.Catrooms/files/bin/TheCatrooms_linux
+
+sources:
+  - kind: git
+    url: https://github.com/mrbid/Catrooms.git
+    version: master
+    commit: 62a03b58389fd3883f9fbabdcb8b629642267dac
+
+  - kind: git
+    url: https://github.com/upx/upx.git
+    version: master
+    commit: 1427b8137a6a3fcbf541e529d9de349230f4ebae
+
+  - kind: file
+    url: https://community-packages.deepin.com/beige/pool/main/g/glfw3/libglfw3_3.3.2-2_amd64.deb
+    digest: 07135a46434466b88f85ad6dbb34bc8dc4f49c822f0d07a58a665ed11179486b
+
+  - kind: file
+    url: https://community-packages.deepin.com/beige/pool/main/g/glfw3/libglfw3-dev_3.3.2-2_amd64.deb
+    digest: b32c7de448ab1946595d9e0472a097af40be3dad1fc6f3a7e47a378284676859
+
+build: |
+  echo "" > $PREFIX/packages.list
+  bash ./install_dep linglong/sources "$PREFIX"
+
+  cd /project/linglong/sources/upx.git/
+  cmake -Bbuild \
+        -DCMAKE_INSTALL_PREFIX=${PREFIX} \
+        -DCMAKE_INSTALL_LIBDIR=${PREFIX}/lib/${TRIPLET}
+  cmake --build build
+  cmake --build build --target install
+  
+  cd /project/linglong/sources/Catrooms.git/
+  make
+  mkdir -p ${PREFIX}/bin
+  mkdir -p ${PREFIX}/share/applications/
+  mkdir -p ${PREFIX}/share/icons/hicolor/512x512/apps/
+
+  cp release/TheCatrooms_linux ${PREFIX}/bin/TheCatrooms_linux
+  cp flat/catrooms.desktop ${PREFIX}/share/applications/catrooms.desktop
+  cp flat/catrooms.png ${PREFIX}/share/icons/hicolor/512x512/apps/catrooms.png
